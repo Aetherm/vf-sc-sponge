@@ -1,0 +1,12 @@
+[{
+    "modid": "vf-sc",
+    "name": "VictoryFireServerControl",
+    "version": "0.2",
+    "description": "Holds the world together",
+    "authorList": [
+        "Aetherm"
+    ],
+    "dependencies": [
+       
+    ]
+}]
