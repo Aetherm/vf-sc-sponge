@@ -10,10 +10,8 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.source.CommandBlockSource;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -29,7 +27,6 @@ public class TradeInfoCommand implements CommandExecutor
 		if(src instanceof Player)
 		{
 			Player player = (Player) src;
-			ItemStack handStack;
 			ItemType itemType = null;
 			
 			Optional<TradeItems> tradeItem = args.<TradeItems>getOne(Text.of("item name"));
@@ -37,37 +34,27 @@ public class TradeInfoCommand implements CommandExecutor
 			if(tradeItem.isPresent())
 			{
 				itemType = TradeItems.getItemType(tradeItem.get());
-			}
 			
-			if(player.getItemInHand(HandTypes.MAIN_HAND).isPresent() || itemType != null)
-			{
-				handStack = player.getItemInHand(HandTypes.MAIN_HAND).orElse(ItemStack.empty());
+				ItemStack buyStack = ItemStack.builder().itemType(itemType).quantity(1).build();
+				ItemStack sellStack = ItemStack.builder().itemType(itemType).quantity(1).build();
 				
-				//check if valid itemType already exists through args
-				if(itemType == ItemTypes.NONE || itemType == null)
+				int buyValue = Value.getBuyValue(buyStack);
+				int sellValue = Value.getSellValue(sellStack);
+				
+				if(buyValue == -1)
 				{
-					itemType = handStack.getType();
+					buyStack = ItemStack.builder().itemType(itemType).quantity(64).build();
+					buyValue = Value.getBuyValue(buyStack);
+				}
+				if(sellValue == -1)
+				{
+					sellStack = ItemStack.builder().itemType(itemType).quantity(64).build();
+					sellValue = Value.getSellValue(sellStack);
 				}
 				
-				int quantity;
-				
-				//TEMPORARY
-				if(itemType.equals(ItemTypes.DIAMOND) || itemType.equals(ItemTypes.EMERALD))
-				{
-					quantity = 1;
-				}
-				else
-				{
-					quantity = itemType.getMaxStackQuantity();
-				}
-				
-				int buyValue = Value.getBuyValue(itemType, quantity);
-				int sellValue = Value.getSellValue(itemType, quantity);
-				
-				//TODO
 				if(buyValue >= 0)
 				{
-					player.sendMessage(Text.of("You can buy ", TextColors.YELLOW , quantity, " ", itemType.getTranslation().get(Locale.US), 
+					player.sendMessage(Text.of("You can buy ", TextColors.YELLOW , buyStack.getQuantity(), " ", itemType.getTranslation().get(Locale.US), 
 										TextColors.NONE," for ", TextColors.YELLOW, buyValue, TextColors.NONE, " Gold!"));
 				}
 				else
@@ -77,20 +64,15 @@ public class TradeInfoCommand implements CommandExecutor
 				
 				if(sellValue >= 0)
 				{
-					player.sendMessage(Text.of("You can sell ", TextColors.YELLOW, quantity, " ", itemType.getTranslation().get(Locale.US),
+					player.sendMessage(Text.of("You can sell ", TextColors.YELLOW, sellStack.getQuantity(), " ", itemType.getTranslation().get(Locale.US),
 							TextColors.NONE, " for ",TextColors.YELLOW, sellValue, TextColors.NONE, " Gold!"));
 				}
 				else
 				{
 					player.sendMessage(Text.of("You can't sell ", TextColors.YELLOW, itemType.getTranslation().get(Locale.US), TextColors.NONE, "!"));
 				}
-			}
-			else
-			{
-				player.sendMessage(Text.of("You need an item in your main hand!"));
-			}
 			
-			itemType = null;
+			}
 		}
 		else if(src instanceof ConsoleSource) {
 		    src.sendMessage(Text.of("Command not available on the console!"));

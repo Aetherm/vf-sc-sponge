@@ -48,13 +48,6 @@ public class CustomCommands
 
 			Sponge.getCommandManager().register(Sponge.getPluginManager().getPlugin("vf-sc").get(), tradeSell, "trade-sell");
 			
-			CommandSpec tradeInfoHand = CommandSpec.builder()
-				    .description(Text.of("Displays the value of the item in your hand!"))
-				    .executor(new TradeInfoCommand())
-				    .build();
-
-			Sponge.getCommandManager().register(Sponge.getPluginManager().getPlugin("vf-sc").get(), tradeInfoHand, "trade-hand");
-			
 			CommandSpec tradeInfoText = CommandSpec.builder()
 				    .description(Text.of("Displays the value of an item!"))
 				    .executor(new TradeInfoCommand())
@@ -87,6 +80,17 @@ public class CustomCommands
 				    .build();
 
 			Sponge.getCommandManager().register(Sponge.getPluginManager().getPlugin("vf-sc").get(), bankInfo, "bank-info");
+			
+			//--------------------------------------------------
+			//!!!for dungeon world testing only!!!
+//			//--------------------------------------------------
+//			CommandSpec dungeonEnter = CommandSpec.builder()
+//				    .description(Text.of("Entering a dungeon"))
+//				    .executor(new DungeonEnterCommand())
+//				    .arguments(GenericArguments.string(Text.of("world name")))
+//				    .build();
+//
+//			Sponge.getCommandManager().register(Sponge.getPluginManager().getPlugin("vf-sc").get(), dungeonEnter, "dungeon-enter");
 	}
 	
 }

@@ -5,7 +5,6 @@ import java.util.Locale;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -17,13 +16,12 @@ public class Trade
 	public static void sell(Player player)
 	{
 		ItemStack itemStack = player.getItemInHand(HandTypes.MAIN_HAND).get();
-		ItemType itemType = itemStack.getType();
 		
 		int quantity = itemStack.getQuantity();
 		
 		int value;
 		
-		value = Value.getSellValue(itemType, quantity);
+		value = Value.getSellValue(itemStack);
 			
 		if(value > 0)
 		{
@@ -41,85 +39,61 @@ public class Trade
 		}
 	}
 	
-	public static void buy(Player player, ItemType itemType)
+	public static void buy(Player player, ItemStack wantedItemStack)
 	{
 		//this variable will late determinate the buying quantity
-		final int wantedQuantity = 1;
+//		final int wantedQuantity = 1;
 		
+		ItemType wantedItemType = wantedItemStack.getType();
+
 		boolean present = player.getItemInHand(HandTypes.MAIN_HAND).isPresent();
-		int quantity = 0;
 		int remainingStackSpace = 0;
 		boolean sameItem = false;
-		ItemStack handStack;
 		
+		ItemStack handStack;
+		int handQuantity = 0;
+		
+		
+		//check if the player hold an item
 		if(present)
-		{
+		{	
 			handStack = player.getItemInHand(HandTypes.MAIN_HAND).get();
 			
-			sameItem = itemType.equals(handStack.getType()) ? true : false;
+			sameItem = wantedItemType.equals(handStack.getType()) ? true : false;
 			
+			//check if it is the same item as the wanted
 			if(sameItem)
 			{
-				quantity = handStack.getQuantity();
-				remainingStackSpace = itemType.getMaxStackQuantity() - handStack.getQuantity();
+				handQuantity = handStack.getQuantity();
+				//getting the remaining space in the stack
+				remainingStackSpace = wantedItemType.getMaxStackQuantity() - handStack.getQuantity();
 			}
 				
 		}
 		
-		if(!present || sameItem && remainingStackSpace >= wantedQuantity)
+		//check if the player holds no item or the one in hand has enough capacity and is the same as the wanted
+		if(!present || sameItem && remainingStackSpace >= wantedItemStack.getQuantity())
 		{
-			int value;
-			
-			if(itemType != ItemTypes.DIAMOND && itemType != ItemTypes.EMERALD)
+			int value = Value.getBuyValue(wantedItemStack);
+			//check if item is purchasable
+			if(value > 0)
 			{
-				//THIS PART IS JUST TEMPORARY
-				//until I decide how players can set the item quantity to buy, ordinary items can only be bought in full stacks!
-				
-				value = Value.getBuyValue(itemType, 64);
-				//check if item is purchasable
-				if(value > 0)
-				{
-					//checking for enough gold
-					if(value <= Central.getDatabaseOperations().fetchGold(player.getUniqueId()))
-					{
-						player.sendMessage(Text.of("Buying ", TextColors.YELLOW, 64," ", itemType.getTranslation().get(Locale.US), TextColors.NONE, " for ",
-								TextColors.YELLOW, value, TextColors.NONE, " Gold!"));
-						
-						Central.getDatabaseOperations().updateGold(player.getUniqueId(), -value);
-						player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.of(itemType, 64));
-						player.sendMessage(Text.of("Your new balance is: ", TextColors.GREEN, Bank.fetchBalance(Central.getDatabaseOperations(), player)));
-					}
-					else
-					{
-						player.sendMessage(Text.of("You have not enough Gold! D:"));
-					}
-				}
-			}
-			else
-			{
-				//THIS PART IS JUST TEMPORARY
-				//until I decide how players can set the item quantity to buy, rare items can only be bought singly
-				
-				value = Value.getBuyValue(itemType, wantedQuantity);
-				
 				//checking for enough gold
 				if(value <= Central.getDatabaseOperations().fetchGold(player.getUniqueId()))
 				{
-					player.sendMessage(Text.of("Buying ", TextColors.YELLOW, wantedQuantity," ", itemType.getTranslation().get(Locale.US), TextColors.NONE, " for ",
+					player.sendMessage(Text.of("Buying ", TextColors.YELLOW, wantedItemStack.getQuantity()," ", wantedItemType.getTranslation().get(Locale.US), TextColors.NONE, " for ",
 							TextColors.YELLOW, value, TextColors.NONE, " Gold!"));
 					
 					Central.getDatabaseOperations().updateGold(player.getUniqueId(), -value);
-					
-					player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.of(itemType, quantity + wantedQuantity));
-					
+					player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.builder().from(wantedItemStack).quantity(handQuantity + wantedItemStack.getQuantity()).build());
 					player.sendMessage(Text.of("Your new balance is: ", TextColors.GREEN, Bank.fetchBalance(Central.getDatabaseOperations(), player)));
 				}
 				else
 				{
 					player.sendMessage(Text.of("You have not enough Gold! D:"));
 				}
-				
 			}
+
 		}
 		else
 		{

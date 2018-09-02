@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 
-@Plugin(id = "vf-sc", name = "VF Server Control", version = "0.2", description = "Holds the world together")
+@Plugin(id = "vf-sc", name = "VF Server Control", version = "0.2.1", description = "Holds the world together")
 
 public class Central
 {	

@@ -1,6 +1,9 @@
 package net.aethermol.trade;
 
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.DyeColors;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 public class Value
 {
@@ -11,7 +14,12 @@ public class Value
 	final static String EMERALD = "minecraft:emerald";
 	final static String REDSTONE = "minecraft:redstone";
 	final static String DIAMOND = "minecraft:diamond";
-//	final static String LAPIS_LAZULI = "LAPIS_LAZULI";
+	final static String DYE = "minecraft:dye";
+	
+	//added with 0.2.1
+	final static String QUARTZ = "minecraft:quartz";
+	final static String GLOWSTONE_DUST = "minecraft:glowstone_dust";
+	final static String CLAY_BALL = "minecraft:clay_ball";
 	
 	//all values represent the value of a full stack in gold nuggets!
 	//e.g.: 64 coal = 10 gold nuggets
@@ -25,12 +33,18 @@ public class Value
 	final static int DIAMOND_VALUE = 384;
 	final static int LAPIS_LAZULI_VALUE = 61;
 	
-	public static int getSellValue(ItemType itemType, int quantity)
+	//added with 0.2.1
+	final static int QUARTZ_VALUE = 54;
+	final static int GLOWSTONE_DUST_VALUE = 128;
+	final static int CLAY_BALL_VALUE = 16;
+	
+	public static int getSellValue(ItemStack itemStack)
 	{	
 		int ret;
 		
+		ItemType itemType = itemStack.getType();
 		
-		if(quantity == itemType.getMaxStackQuantity())
+		if(itemStack.getQuantity() == itemStack.getMaxStackQuantity())
 		{	
 			switch(itemType.getName())
 			{
@@ -45,8 +59,21 @@ public class Value
 			break;
 			case DIAMOND: ret = DIAMOND_VALUE;
 			break;
-//			case LAPIS_LAZULI: ret = LAPIS_LAZULI_VALUE;
-//			break;
+			case DYE: 
+				if(itemStack.get(Keys.DYE_COLOR).orElse(null).equals(DyeColors.BLUE))
+				{
+					ret = LAPIS_LAZULI_VALUE;
+				}
+				else
+				{
+					ret = -1;
+				}
+			break;
+			case QUARTZ: ret = QUARTZ_VALUE;
+			break;
+			//no glow-stone!
+			case CLAY_BALL: ret = CLAY_BALL_VALUE;
+			break;
 			default: ret = -1;
 			}
 		}
@@ -54,7 +81,7 @@ public class Value
 		{
 			switch(itemType.getName())
 			{
-			case DIAMOND: ret = DIAMOND_VALUE/64*quantity;
+			case DIAMOND: ret = DIAMOND_VALUE/64*itemStack.getQuantity();
 			break;
 			default: ret = -1;
 			}
@@ -63,12 +90,16 @@ public class Value
 		return ret;
 	}
 	
-	public static int getBuyValue(ItemType itemType, int quantity)
+	public static int getBuyValue(ItemStack itemStack)
 	{
 		int ret;
 		
-		if(quantity == itemType.getMaxStackQuantity())
+		ItemType itemType = itemStack.getType();
+		
+		if(itemStack.getQuantity() == itemStack.getMaxStackQuantity())
 		{
+			itemType = itemStack.getType();
+			
 			switch(itemType.getName())
 			{
 			case COAL: ret = COAL_VALUE;
@@ -81,6 +112,22 @@ public class Value
 			break;
 			case DIAMOND: ret = DIAMOND_VALUE;
 			break;
+			case DYE: 
+				if(itemStack.get(Keys.DYE_COLOR).orElse(null).equals(DyeColors.BLUE))
+				{
+					ret = LAPIS_LAZULI_VALUE;
+				}
+				else
+				{
+					ret = -1;
+				}
+			break;
+			case QUARTZ: ret = QUARTZ_VALUE;
+			break;
+			case GLOWSTONE_DUST: ret = GLOWSTONE_DUST_VALUE;
+			break;
+			case CLAY_BALL: ret = CLAY_BALL_VALUE;
+			break;
 			default: ret = -1;
 			}
 		}
@@ -88,9 +135,9 @@ public class Value
 		{
 			switch(itemType.getName())
 			{
-			case DIAMOND: ret = DIAMOND_VALUE/64*quantity;
+			case DIAMOND: ret = DIAMOND_VALUE/64*itemStack.getQuantity();
 			break;
-			case EMERALD: ret = EMERALD_VALUE/64*quantity;
+			case EMERALD: ret = EMERALD_VALUE/64*itemStack.getQuantity();
 			break;
 			default: ret = -1;
 			}
@@ -98,5 +145,4 @@ public class Value
 		
 		return ret;
 	}
-	
 }
