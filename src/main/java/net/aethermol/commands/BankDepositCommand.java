@@ -63,6 +63,16 @@ public class BankDepositCommand implements CommandExecutor
 						player.sendMessage(Text.of("Your old balance was: ", TextColors.YELLOW, balance));
 						player.sendMessage(Text.of("Your new balance is: ", TextColors.GREEN, Bank.fetchBalance(Central.getDatabaseOperations(), player)));
 					}
+					else if(itemStack.getType() == ItemTypes.GOLD_BLOCK)
+					{
+						amount = itemStack.getQuantity()*81;
+						
+						player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.empty());
+						Bank.deposit(Central.getDatabaseOperations(), player, amount);
+						
+						player.sendMessage(Text.of("Your old balance was: ", TextColors.YELLOW, balance));
+						player.sendMessage(Text.of("Your new balance is: ", TextColors.GREEN, Bank.fetchBalance(Central.getDatabaseOperations(), player)));
+					}
 					else
 					{
 						player.sendMessage(Text.of("You need at least one Gold nugget in your hand!"));

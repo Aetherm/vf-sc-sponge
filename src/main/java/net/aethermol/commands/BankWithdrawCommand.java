@@ -9,6 +9,7 @@ import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -41,18 +42,41 @@ public class BankWithdrawCommand implements CommandExecutor
 			
 				if(!player.getItemInHand(HandTypes.MAIN_HAND).isPresent())
 				{
-					int withdraw = 64;
+					int withdraw = 0;
 					int balance = Bank.fetchBalance(Central.getDatabaseOperations(), player);
+					
+					ItemType goldType;
+					int creditGoldType = 0;
 					
 					if(balance > 0)
 					{
-						if(balance < withdraw)
+						//check if credit is enough for nuggets...
+						if(balance <= 64)
 						{
-							withdraw = balance;
+							goldType = ItemTypes.GOLD_NUGGET;
+							creditGoldType = balance;
+							withdraw = creditGoldType;
 						}
+						else
+						{
+							//...or for ingots...
+							{
+								goldType = ItemTypes.GOLD_INGOT;
+								creditGoldType = balance / 9;
+								withdraw = creditGoldType * 9;
+							}
+							//...or even blocks!
+							if(balance > 576)
+							{
+								goldType = ItemTypes.GOLD_BLOCK;
+								creditGoldType = balance / 81;
+								withdraw = creditGoldType * 81;
+							}
+						}
+						
 					
 						Bank.withdraw(Central.getDatabaseOperations(), player, withdraw);
-						player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.builder().itemType(ItemTypes.GOLD_NUGGET).quantity(withdraw).build());
+						player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.builder().itemType(goldType).quantity(creditGoldType).build());
 						
 						player.sendMessage(Text.of("Your old balance was: ", TextColors.YELLOW, balance));
 						player.sendMessage(Text.of("Your new balance is: ", TextColors.GREEN, Bank.fetchBalance(Central.getDatabaseOperations(), player)));
@@ -76,4 +100,5 @@ public class BankWithdrawCommand implements CommandExecutor
 		
 		return CommandResult.success();
 	}
+	
 }

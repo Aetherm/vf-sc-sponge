@@ -1,7 +1,5 @@
 package net.aethermol.trade;
 
-import java.util.Locale;
-
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
@@ -15,17 +13,37 @@ public class Trade
 {
 	public static void sell(Player player)
 	{
-		ItemStack itemStack = player.getItemInHand(HandTypes.MAIN_HAND).get();
+		ItemStack sellItemStack = player.getItemInHand(HandTypes.MAIN_HAND).get();
+		String sellItemName = TradeItems.getFromStack(sellItemStack).getItemName();
 		
-		int quantity = itemStack.getQuantity();
+		int quantity = sellItemStack.getQuantity();
 		
 		int value;
 		
-		value = Value.getSellValue(itemStack);
-			
+		value = TradeItems.getFromStack(sellItemStack).getStackSellValue();
+		
+		TradeItems sellTradeItem = TradeItems.getFromStack(sellItemStack);
+		
+		if(sellTradeItem.singlyTradable())
+		{
+			value = sellTradeItem.getSinglySellValue()*quantity;
+		}
+		else
+		{
+			//check for a full stack in hand
+			if(quantity == sellItemStack.getMaxStackQuantity())
+			{
+				value = sellTradeItem.getStackSellValue();
+			}
+			else
+			{
+				value = 0;
+			}
+		}
+		
 		if(value > 0)
 		{
-			player.sendMessage(Text.of("Selling ", TextColors.YELLOW, quantity," ", itemStack.getType().getTranslation().get(Locale.US), TextColors.NONE, " for ",
+			player.sendMessage(Text.of("Selling ", TextColors.YELLOW, quantity," ", sellItemName, TextColors.NONE, " for ",
 									TextColors.YELLOW, value, TextColors.NONE, " Gold!"));
 				
 			Central.getDatabaseOperations().updateGold(player.getUniqueId(), value);
@@ -40,12 +58,10 @@ public class Trade
 	}
 	
 	public static void buy(Player player, ItemStack wantedItemStack)
-	{
-		//this variable will late determinate the buying quantity
-//		final int wantedQuantity = 1;
-		
+	{	
 		ItemType wantedItemType = wantedItemStack.getType();
-
+		String itemName = TradeItems.getFromStack(wantedItemStack).getItemName();
+		
 		boolean present = player.getItemInHand(HandTypes.MAIN_HAND).isPresent();
 		int remainingStackSpace = 0;
 		boolean sameItem = false;
@@ -53,8 +69,7 @@ public class Trade
 		ItemStack handStack;
 		int handQuantity = 0;
 		
-		
-		//check if the player hold an item
+		//check if the player holds an item
 		if(present)
 		{	
 			handStack = player.getItemInHand(HandTypes.MAIN_HAND).get();
@@ -71,17 +86,29 @@ public class Trade
 				
 		}
 		
-		//check if the player holds no item or the one in hand has enough capacity and is the same as the wanted
+		//check if the player holds no item or the item in hand has enough capacity and is the same item as the wanted
 		if(!present || sameItem && remainingStackSpace >= wantedItemStack.getQuantity())
 		{
-			int value = Value.getBuyValue(wantedItemStack);
+			TradeItems wantedTradeItem = TradeItems.getFromStack(wantedItemStack);
+			
+			int value;
+			
+			if(wantedTradeItem.singlyTradable())
+			{
+				value = wantedTradeItem.getSinglyBuyValue();
+			}
+			else
+			{
+				value = TradeItems.getFromStack(wantedItemStack).getStackBuyValue();
+			}
+			
 			//check if item is purchasable
 			if(value > 0)
 			{
 				//checking for enough gold
 				if(value <= Central.getDatabaseOperations().fetchGold(player.getUniqueId()))
 				{
-					player.sendMessage(Text.of("Buying ", TextColors.YELLOW, wantedItemStack.getQuantity()," ", wantedItemType.getTranslation().get(Locale.US), TextColors.NONE, " for ",
+					player.sendMessage(Text.of("Buying ", TextColors.YELLOW, wantedItemStack.getQuantity()," ", itemName, TextColors.NONE, " for ",
 							TextColors.YELLOW, value, TextColors.NONE, " Gold!"));
 					
 					Central.getDatabaseOperations().updateGold(player.getUniqueId(), -value);

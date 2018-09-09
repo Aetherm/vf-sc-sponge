@@ -29,7 +29,6 @@ public class DungeonEnterCommand implements CommandExecutor
 			Optional<String> worldName = args.<String>getOne(Text.of("world name"));
 			if(worldName.isPresent())
 			{
-			
 				world = DungeonWorld.createWorld(worldName.get());
 				
 				player.transferToWorld(world);

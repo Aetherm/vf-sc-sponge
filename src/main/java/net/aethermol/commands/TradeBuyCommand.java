@@ -88,6 +88,8 @@ public class TradeBuyCommand implements CommandExecutor
 		break;
 		case "minecraft:clay": ret = ItemStack.builder().itemType(ItemTypes.CLAY_BALL).quantity(64).build();
 		break;
+		default: ret = ItemStack.empty();
+		break;
 		}
 		
 		return ret;
